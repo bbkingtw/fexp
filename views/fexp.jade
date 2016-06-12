@@ -1,0 +1,217 @@
+script(src='/cdn/jquery.min.js')
+script(src='/cdn/moment.js')
+
+script(src='/cdn/alertify/lib/alertify.js')
+link(rel="stylesheet", href="/cdn/alertify/themes/alertify.core.css")
+link(rel="stylesheet", href="/cdn/alertify/themes/alertify.default.css" id="toggleCSS")
+
+ 
+script(src="/cdn/tooltip/js/jquery.tooltipster.min.js")
+link(rel="stylesheet", type="text/css", href="/cdn/tooltip/css/tooltipster.css")
+
+
+style.	
+	td.center {
+		align:center;
+	}
+
+	.hide {
+		visibility:hidden;
+	}
+
+	img.upload {
+		max-width:40px;
+	}
+
+	td.icon {
+		align:center;
+	}
+
+	th {
+		text-align:left;
+		text-decoration: underline;
+	}
+
+	.icon {
+		max-width:20px;
+		margin-right:5px;		
+	}
+
+	td {
+		//margin:20px;
+		padding-right:15px;
+	}
+
+	td.name {
+		width:200px;
+	}
+
+	th.name {
+		width:200px;
+	}
+
+	.size {
+		text-align:right;
+		width:150px;
+		padding-right:30px;
+	}
+
+	.time {
+		text-algin:right;
+		width:150px;
+	}
+
+h1=base_dir
+	a.upload_file(href=base_dir)		
+		img.upload(src='/public/upload.gif') 
+		label 上傳檔案
+	input#search
+hr
+table
+	theader
+		th(colspan=2) 名稱
+		th.size 大小
+		th 已修改日期
+		th 動作	
+	tbody
+		- var xlen=base_dir.split('/').length-1					
+			if xlen>1
+				tr
+					td.icon					
+						img.icon(src='/public/icon_parent.gif')	
+					td.name 			
+						a.parent(href=parent_path) [父目錄]	
+					td
+		for item in items
+			tr	
+				if (item.dir)
+					td.icon					
+						img.icon(src='/public/folder.jpg')						
+				else
+					td.icon					
+						img.icon(src='/file_image/'+item.name) 				
+
+				td.name					
+					a.name(href=base_dir+'/'+item.name)=item.name				
+				
+				
+				if (item.dir)
+					td.size
+				else
+					td.size=item.size
+
+				td.time=item.mtime
+				if item.dir
+					if 1==0
+						td					
+							a.upload_file(href=base_dir+'/'+item.name)
+								img.icon(src='/public/FileUpload.gif') 
+								label 上傳檔案	
+				else
+					td.center
+						a.delete_file(href='/delete'+base_dir+'/'+item.name)
+							//a.delete_file(href=base_dir+'/'+item.name)
+							img.icon(src='/public/delete.png') 
+							//label 刪除檔案	
+
+					if item.exec
+						td					
+							a.execute_file(href='/execute'+base_dir+'/'+item.name)
+								img.icon(src='/public/execute.gif') 
+								label 執行									
+
+				//if item.dir
+				//	td 檔案資料夾
+				//else
+				//	td 檔案
+
+
+   
+form(action='/upload', method='post', enctype="multipart/form-data").hide
+	input#myfile(name='myfile', type="file")
+	input#kk(name='kk')
+	input(type='submit')
+	input#target_folder(name='target_folder')
+
+script.	
+	function delete_file($this) {	
+		var url=$this.attr('href')
+		$.post(url, function(data){
+			if (data=='done') $this.closest('tr').remove()
+		})					
+	}
+
+	$(function(){				
+		//$('#kk').val('123')
+		//$(".confirm").confirm();
+
+		$('.time').map(function(i,obj){
+			var t=$(obj).text()
+			console.log(t)
+			var t2=moment(t).format('YYYY/MM/DD HH:mm')
+			$(obj).text(t2)
+		})
+
+		if (false) {
+			var href=$('a.parent').attr('href')
+			//alert(href)
+			console.log('href',href)
+			var x=href.split('/')
+			x.splice(-1,1)		
+			var y=x.join('/')
+			//alert(y)
+			$('a.parent').attr('href',y)
+		}		
+
+		$("input:file").change(function (){
+			//var fileName = $(this).val();
+			//$(".filename").html(fileName);		
+			
+			$(this).closest('form').submit()
+		});
+
+		$('.upload_file').click(function(e){
+			e.preventDefault()
+			var target_folder=$(this).attr('target_folder')
+			console.log('target_folder', target_folder)
+			//alert(target_folder)
+			$('#target_folder').val(target_folder)
+
+			var href=$(this).attr('href')
+			//alert('href=>'+href)
+			$('form').attr('action', href)
+			$('input[type="file"]').click();			
+		})
+
+		$('a.delete_file').click(function(e){
+			var $this=$(this)
+			e.preventDefault()
+
+			alertify.set({ buttonReverse: true })
+
+			window.x=$(this)			
+			var title=$(this).closest('tr').find('a.name').attr('href').split('/').splice(-1,1)[0]		
+
+			alertify.confirm("確定刪除" + title +'?', function (e) {
+				if (e) delete_file($this)
+			});
+		})
+
+		$('#search').bind('input', function() {
+		//$('#search').keyup(function(x){
+			var text=$(this).val()
+			$('tr').hide()			
+			$('a:contains("'+text+'")').closest('tr').show()
+		})
+
+		$('a.name').map(function(i,obj){
+			var t=$(this).text()
+			if (t.length>50) {
+				$(obj)
+					.text(t.substr(0,46)+'....')
+					.addClass("tooltip").attr('title', t)				
+			}
+		})
+
+		$('.tooltip').tooltipster();
+	})	

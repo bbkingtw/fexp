@@ -1,0 +1,48 @@
+script.
+	$(function(){
+		var tables=$('table#table')		
+
+		if (tables.length==1) {
+			$(tables[0]).show()
+			$(tables[0]).dataTable()
+		}
+		else
+			for (var i=0; i<tables.length; i++)	{			
+				$(tables[i]).hide();
+
+				$(tables[i]).parent().find('h3').click(function(e){				
+					e.preventDefault()
+					if ($(this).closest('div').find('table').is(':visible'))				
+						$(this).closest('div').find('table').hide()
+					else
+						$(this).closest('div').find('table').show()
+				})
+			}
+	})
+
+for table in tables 
+	div
+		center	
+			h3 #{table.title} (row=#{table.data.length})
+		table#table.title.hide(border=1)
+			if table.data.length==0
+				center
+					h2 沒有任何資料 
+			else
+				thead						
+					tr	
+						for value, key in table.data[0]
+							th(id=key)=key
+				tbody
+					for row in table.data
+						tr									
+							for filler, key in table.data[0]						
+								-var type= typeof row[key]
+								if type=='number'
+									td.data.number(id=key, align='right')=row[key]
+								else
+									td.data(id=key)=row[key]
+				tfoot				
+					tr				
+						for value, key in table.data[0]
+							th(id=key)=key

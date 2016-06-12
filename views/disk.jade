@@ -1,0 +1,17 @@
+script(src='/cdn/jquery.min.js')
+
+style. 
+	td#mountpoint {
+		text-align:center;
+	}
+	
+script.
+	$(function(){
+		$('td#mountpoint').map(function(i, obj){
+			var d=$(obj).text().substr(0,1)
+			$(obj).html('<a href="/'+d+'">'+d+'</a>')
+		})
+	})
+
+center
+	include draw-table.jade
